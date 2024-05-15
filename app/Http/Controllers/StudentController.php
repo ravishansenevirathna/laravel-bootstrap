@@ -15,7 +15,9 @@ class StudentController extends Controller
     // }
 
     public function getallstudent(){
-        $student = Student::all();
+        // $student = Student::all();
+
+        $student = Student::paginate(2);
         // print_r($student);
         // var_dump($student);
         // dd($student);
@@ -30,6 +32,18 @@ class StudentController extends Controller
 
     
     public function savestudenttothedb(Request $request){ 
+
+        //add validations
+        $request->validate([
+            "name"=> "required",
+            "phone"=> "required|unique:students,phone",
+            "email"=> "required|email",
+        ] ,[
+            "name.required"=> "Student name field is required",
+            "email.required"=> "please enter emaill",
+            "email.email"=> "please enter valid email",
+        ]);
+
 
         $student = new Student();
 
@@ -50,6 +64,17 @@ class StudentController extends Controller
     }
 
     public function editstudentsavedb(Request $request, $id){
+
+        $request->validate([
+            "name"=> "required",
+            "phone"=> "required|unique:students,phone," . $id,
+            "email"=> "required|email",
+        ] ,[
+            "name.required"=> "Student name field is required",
+            "email.required"=> "please enter emaill",
+            "email.email"=> "please enter valid email",
+        ]);
+
         $student = Student::find($id);
 
         $student->name = $request->name;
@@ -59,4 +84,16 @@ class StudentController extends Controller
 
         return redirect("getallstudent");
     }
+
+    public function deletestudent($id){
+        Student::find($id)->delete();
+
+        return redirect("getallstudent")->with(["msg"=> "Student deleted sucessfully"]);
+
+     }
+
+     public function view($id){
+        $student = Student::find($id);
+        return view("students.view",compact("student"));
+     }
 }
